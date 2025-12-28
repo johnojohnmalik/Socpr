@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOC // Threat Intel Training</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;500;600;700&display=swap');
+        
+        :root {
+            --bg-primary: #0a0e14;
+            --bg-secondary: #0d1117;
+            --bg-card: #151b23;
+            --bg-answer: #1a2332;
+            --bg-glow: rgba(0, 255, 170, 0.03);
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --accent-knew: #00ffaa;
+            --accent-partial: #ff9f1c;
+            --accent-didnt: #ff4757;
+            --accent-cyan: #00d4ff;
+            --accent-purple: #bd93f9;
+            --border-glow: rgba(0, 255, 170, 0.3);
+            --border-dim: rgba(139, 148, 158, 0.2);
+            --border-card: rgba(0, 212, 255, 0.15);
+            --shadow-glow: 0 0 30px rgba(0, 255, 170, 0.1);
+            --shadow-card: 0 4px 30px rgba(0, 0, 0, 0.4);
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Rajdhani', 'Segoe UI', sans-serif;
+            background: var(--bg-primary);
+            min-height: 100vh;
+            color: var(--text-primary);
+            line-height: 1.7;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* Animated grid background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(rgba(0, 255, 170, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 170, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+            animation: gridPulse 8s ease-in-out infinite;
+        }
+        
+        @keyframes gridPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        
+        /* Scanline effect */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 0, 0, 0.1) 2px,
+                rgba(0, 0, 0, 0.1) 4px
+            );
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.3;
+        }
+        
+        body.rtl { direction: rtl; }
+        
+        .app-container {
+            max-width: 850px;
+            margin: 0 auto;
+            padding: 1.5rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 1;
+        }
+        
+        header {
+            text-align: center;
+            padding: 2rem 0;
+            border-bottom: 1px solid var(--border-dim);
+            margin-bottom: 2rem;
+            position: relative;
+        }
+        
+        header::before {
+            content: '◈ SECURITY OPERATIONS CENTER ◈';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--accent-cyan);
+            letter-spacing: 0.3em;
+            opacity: 0.6;
+        }
+        
+        header h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-knew));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 40px rgba(0, 255, 170, 0.3);
+            animation: titleGlow 3s ease-in-out infinite alternate;
+        }
+        
+        @keyframes titleGlow {
+            0% { filter: drop-shadow(0 0 5px rgba(0, 255, 170, 0.3)); }
+            100% { filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.5)); }
+        }
+        
+        .subtitle { 
+            color: var(--text-muted); 
+            font-size: 0.95rem;
+            font-family: 'Share Tech Mono', monospace;
+            letter-spacing: 0.1em;
+        }
+        
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1.25rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            flex-wrap: wrap;
+        }
+        
+        .stat { 
+            display: flex; 
+            align-items: center; 
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(0, 212, 255, 0.05);
+            border: 1px solid var(--border-dim);
+            border-radius: 4px;
+        }
+        
+        .stat-value { 
+            font-family: 'Share Tech Mono', monospace; 
+            font-weight: 500; 
+            color: var(--accent-cyan);
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+        }
+        
+        .question-card {
+            background: var(--bg-card);
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--border-card);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Animated corner accents */
+        .question-card::before,
+        .question-card::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--accent-cyan);
+            opacity: 0.5;
+        }
+        
+        .question-card::before {
+            top: 10px;
+            left: 10px;
+            border-right: none;
+            border-bottom: none;
+        }
+        
+        .question-card::after {
+            bottom: 10px;
+            right: 10px;
+            border-left: none;
+            border-top: none;
+        }
+        
+        .question-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-dim);
+        }
+        
+        .question-category {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--accent-cyan);
+            font-family: 'Share Tech Mono', monospace;
+            padding: 0.35rem 0.75rem;
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 3px;
+        }
+        
+        .question-type {
+            font-size: 0.7rem;
+            padding: 0.4rem 0.75rem;
+            background: var(--bg-secondary);
+            border-radius: 3px;
+            color: var(--text-muted);
+            font-family: 'Share Tech Mono', monospace;
+            border: 1px solid var(--border-dim);
+        }
+        
+        .question-text {
+            font-size: 1.25rem;
+            line-height: 1.8;
+            margin-bottom: 2rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+        }
+        
+        .option-btn {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-dim);
+            border-radius: 6px;
+            padding: 1rem 1.5rem;
+            text-align: left;
+            font-family: inherit;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            color: var(--text-primary);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .option-btn::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--accent-cyan);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .option-btn:hover:not(.disabled) { 
+            border-color: var(--accent-cyan);
+            background: rgba(0, 212, 255, 0.08);
+            transform: translateX(5px);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.15);
+        }
+        
+        .option-btn:hover:not(.disabled)::before { opacity: 1; }
+        
+        .option-btn.selected { 
+            border-color: var(--accent-partial); 
+            background: rgba(255, 159, 28, 0.12);
+            box-shadow: 0 0 20px rgba(255, 159, 28, 0.2);
+        }
+        
+        .option-btn.correct { 
+            border-color: var(--accent-knew); 
+            background: rgba(0, 255, 170, 0.12);
+            box-shadow: 0 0 20px rgba(0, 255, 170, 0.2);
+        }
+        
+        .option-btn.correct::before { background: var(--accent-knew); opacity: 1; }
+        
+        .option-btn.incorrect { 
+            border-color: var(--accent-didnt); 
+            background: rgba(255, 71, 87, 0.12);
+            box-shadow: 0 0 20px rgba(255, 71, 87, 0.2);
+        }
+        
+        .option-btn.incorrect::before { background: var(--accent-didnt); opacity: 1; }
+        
+        .option-btn.disabled { cursor: default; }
+        
+        .answer-input {
+            width: 100%;
+            min-height: 120px;
+            padding: 1rem;
+            border: 1px solid var(--border-dim);
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 1rem;
+            line-height: 1.6;
+            resize: vertical;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            transition: all 0.3s;
+        }
+        
+        .answer-input::placeholder {
+            color: var(--text-muted);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9rem;
+        }
+        
+        .answer-input:focus { 
+            outline: none; 
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.15);
+        }
+        
+        .submit-btn {
+            align-self: flex-start;
+            padding: 0.85rem 2.5rem;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(0, 255, 170, 0.2));
+            color: var(--accent-cyan);
+            border: 1px solid var(--accent-cyan);
+            border-radius: 4px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        
+        .submit-btn:hover { 
+            background: var(--accent-cyan);
+            color: var(--bg-primary);
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.4);
+        }
+        
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .answer-section {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-dim);
+            display: none;
+            animation: fadeSlideIn 0.4s ease-out;
+        }
+        
+        @keyframes fadeSlideIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(10px);
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0);
+            }
+        }
+        
+        .answer-section.visible { display: block; }
+        
+        .answer-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--accent-knew);
+            margin-bottom: 0.75rem;
+            font-family: 'Share Tech Mono', monospace;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .answer-label::before {
+            content: '▶';
+            font-size: 0.6rem;
+        }
+        
+        .correct-answer {
+            background: var(--bg-answer);
+            padding: 1.5rem;
+            border-radius: 6px;
+            border-left: 3px solid var(--accent-knew);
+            margin-bottom: 2rem;
+            white-space: pre-wrap;
+            position: relative;
+            box-shadow: inset 0 0 30px rgba(0, 255, 170, 0.03);
+        }
+        
+        .correct-answer em {
+            color: var(--text-muted);
+            font-style: normal;
+            font-size: 0.9em;
+        }
+        
+        .feedback-section {
+            margin-top: auto;
+            padding-top: 2rem;
+            display: none;
+            animation: fadeSlideIn 0.4s ease-out;
+        }
+        
+        .feedback-section.visible { display: block; }
+        
+        .feedback-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.25rem;
+            text-align: center;
+            font-family: 'Share Tech Mono', monospace;
+        }
+        
+        .feedback-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+        
+        .feedback-btn {
+            flex: 1;
+            max-width: 180px;
+            padding: 1rem 1.5rem;
+            border: 1px solid;
+            border-radius: 4px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: transparent;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .feedback-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .feedback-btn.didnt-know { 
+            color: var(--accent-didnt); 
+            border-color: var(--accent-didnt);
+        }
+        
+        .feedback-btn.didnt-know::before {
+            background: linear-gradient(135deg, rgba(255, 71, 87, 0.2), transparent);
+        }
+        
+        .feedback-btn.didnt-know:hover { 
+            background: var(--accent-didnt); 
+            color: var(--bg-primary);
+            box-shadow: 0 0 30px rgba(255, 71, 87, 0.4);
+        }
+        
+        .feedback-btn.partial { 
+            color: var(--accent-partial); 
+            border-color: var(--accent-partial);
+        }
+        
+        .feedback-btn.partial::before {
+            background: linear-gradient(135deg, rgba(255, 159, 28, 0.2), transparent);
+        }
+        
+        .feedback-btn.partial:hover { 
+            background: var(--accent-partial); 
+            color: var(--bg-primary);
+            box-shadow: 0 0 30px rgba(255, 159, 28, 0.4);
+        }
+        
+        .feedback-btn.knew { 
+            color: var(--accent-knew); 
+            border-color: var(--accent-knew);
+        }
+        
+        .feedback-btn.knew::before {
+            background: linear-gradient(135deg, rgba(0, 255, 170, 0.2), transparent);
+        }
+        
+        .feedback-btn.knew:hover { 
+            background: var(--accent-knew); 
+            color: var(--bg-primary);
+            box-shadow: 0 0 30px rgba(0, 255, 170, 0.4);
+        }
+        
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-dim);
+        }
+        
+        .nav-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            background: transparent;
+            border: 1px solid var(--border-dim);
+            border-radius: 4px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .nav-btn:hover:not(:disabled) { 
+            background: rgba(0, 212, 255, 0.1);
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+        
+        .nav-btn:disabled { 
+            opacity: 0.3; 
+            cursor: not-allowed; 
+        }
+        
+        .debug-toggle {
+            font-size: 0.75rem;
+            color: var(--accent-purple);
+            background: none;
+            border: 1px solid rgba(189, 147, 249, 0.3);
+            padding: 0.5rem 0.75rem;
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: 'Share Tech Mono', monospace;
+            transition: all 0.3s;
+        }
+        
+        .debug-toggle:hover {
+            background: rgba(189, 147, 249, 0.1);
+            border-color: var(--accent-purple);
+        }
+        
+        .debug-panel {
+            display: none;
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: #0d1117;
+            border-radius: 6px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.75rem;
+            color: #8b949e;
+            border: 1px solid var(--border-dim);
+            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .debug-panel.visible { display: block; }
+        
+        .debug-panel h3 { 
+            color: var(--accent-purple); 
+            margin-bottom: 1rem; 
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .debug-panel h3::before {
+            content: '⚙';
+        }
+        
+        .debug-panel pre { white-space: pre-wrap; line-height: 1.6; }
+        .debug-key { color: var(--accent-cyan); }
+        .debug-value { color: var(--accent-partial); }
+        .debug-number { color: var(--accent-knew); }
+        .debug-section { margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-dim); }
+        
+        .start-screen { 
+            text-align: center; 
+            padding: 3rem;
+        }
+        
+        .start-screen h2 { 
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem; 
+            margin-bottom: 1.5rem;
+            color: var(--accent-cyan);
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+        }
+        
+        .start-screen p { 
+            color: var(--text-secondary); 
+            margin-bottom: 2rem; 
+            max-width: 500px; 
+            margin-left: auto; 
+            margin-right: auto;
+            font-size: 1.1rem;
+        }
+        
+        .start-btn {
+            padding: 1.1rem 3.5rem;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-knew));
+            color: var(--bg-primary);
+            border: none;
+            border-radius: 4px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            transition: all 0.3s;
+            box-shadow: 0 0 30px rgba(0, 255, 170, 0.3);
+        }
+        
+        .start-btn:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 0 50px rgba(0, 255, 170, 0.5);
+        }
+        
+        .reset-btn {
+            margin-top: 2rem;
+            padding: 0.75rem 1.5rem;
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border-dim);
+            border-radius: 4px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .reset-btn:hover { 
+            border-color: var(--accent-didnt); 
+            color: var(--accent-didnt);
+            background: rgba(255, 71, 87, 0.1);
+        }
+        
+        .lang-select {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        
+        .lang-btn {
+            padding: 0.75rem 2rem;
+            border: 1px solid var(--border-dim);
+            border-radius: 4px;
+            background: transparent;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all 0.3s;
+        }
+        
+        .lang-btn:hover { 
+            background: rgba(0, 212, 255, 0.1);
+            border-color: var(--accent-cyan);
+            color: var(--text-primary);
+        }
+        
+        .lang-btn.active { 
+            border-color: var(--accent-knew); 
+            background: rgba(0, 255, 170, 0.15);
+            color: var(--accent-knew);
+            box-shadow: 0 0 20px rgba(0, 255, 170, 0.2);
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-dim);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-cyan);
+        }
+        
+        @media (max-width: 600px) {
+            .app-container { padding: 1rem; }
+            .question-card { padding: 1.5rem; }
+            .question-text { font-size: 1.1rem; }
+            .feedback-buttons { flex-direction: column; }
+            .feedback-btn { max-width: none; }
+            header h1 { font-size: 1.5rem; }
+            header::before { display: none; }
+            .stats-bar { gap: 0.5rem; }
+            .stat { padding: 0.35rem 0.6rem; font-size: 0.75rem; }
+        }
+        
+        .hidden { display: none !important; }
+        
+        /* Credit watermark */
+        .credit {
+            position: fixed;
+            bottom: 1rem;
+            right: 1.5rem;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--accent-cyan);
+            opacity: 0.4;
+            letter-spacing: 0.1em;
+            z-index: 10;
+            pointer-events: none;
+            text-transform: uppercase;
+        }
+        
+        .credit::before {
+            content: '◈ ';
+            opacity: 0.6;
+        }
+        
+        .credit::after {
+            content: ' ◈';
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="credit">made by Jonathan Malka</div>
+    <div class="app-container">
+        <header>
+            <h1>SOC INTEL TRAINER</h1>
+            <p class="subtitle">// Security Operations Knowledge Base</p>
+            <div class="stats-bar">
+                <div class="stat"><span>PROGRESS:</span><span class="stat-value" id="progress-stat">0%</span></div>
+                <div class="stat"><span>SECURED:</span><span class="stat-value" id="known-stat">0</span></div>
+                <div class="stat"><span>IN_QUEUE:</span><span class="stat-value" id="learning-stat">0</span></div>
+                <div class="stat"><span>SESSION:</span><span class="stat-value" id="session-stat">0</span></div>
+            </div>
+        </header>
+        
+        <main id="main-content"></main>
+        
+        <nav class="nav-bar">
+            <button class="nav-btn" id="back-btn" disabled>◀ PREV</button>
+            <button class="debug-toggle" id="debug-toggle">[ SYS_DEBUG ]</button>
+            <button class="nav-btn" id="skip-btn">SKIP ▶</button>
+        </nav>
+        
+        <div class="debug-panel" id="debug-panel">
+            <h3>SYSTEM_DIAGNOSTICS</h3>
+            <div id="debug-content"></div>
+        </div>
+    </div>
+
+    <script>
+    // ═══════════════════════════════════════════════════════════════
+    // YOUR QUESTION DATABASE - 80 BILINGUAL FLASHCARDS
+    // ═══════════════════════════════════════════════════════════════
+    
+    const QUESTIONS = [
+        // ===== OSI MODEL =====
+        {id:1,category:"OSI Model",type:"open",
+            en:{q:"What are the 7 layers of the OSI model from bottom to top?",a:"Physical → Data Link → Network → Transport → Session → Presentation → Application",e:"Remember: 'Please Do Not Throw Sausage Pizza Away'"},
+            he:{q:"מהן 7 השכבות של מודל ה-OSI מלמטה למעלה?",a:"Physical → Data Link → Network → Transport → Session → Presentation → Application",e:"טיפ לזכירה: 'Please Do Not Throw Sausage Pizza Away'"}},
+        {id:2,category:"OSI Model",type:"mc",
+            en:{q:"Which OSI layer is responsible for IP addressing and routing?",o:["Data Link (Layer 2)","Network (Layer 3)","Transport (Layer 4)","Session (Layer 5)"],e:"Layer 3 (Network) handles logical addressing (IP) and determines the best path."},
+            he:{q:"איזו שכבת OSI אחראית על כתובות IP וניתוב?",o:["Data Link (שכבה 2)","Network (שכבה 3)","Transport (שכבה 4)","Session (שכבה 5)"],e:"שכבה 3 (Network) מטפלת בכתובות לוגיות (IP) וקובעת את הנתיב הטוב ביותר."},correctIndex:1},
+        {id:3,category:"OSI Model",type:"mc",
+            en:{q:"At which layer does TCP operate?",o:["Network (Layer 3)","Transport (Layer 4)","Session (Layer 5)","Application (Layer 7)"],e:"TCP and UDP both operate at Transport layer (Layer 4)."},
+            he:{q:"באיזו שכבה פועל פרוטוקול TCP?",o:["Network (שכבה 3)","Transport (שכבה 4)","Session (שכבה 5)","Application (שכבה 7)"],e:"TCP ו-UDP שניהם פועלים בשכבת Transport (שכבה 4)."},correctIndex:1},
+        {id:4,category:"OSI Model",type:"open",
+            en:{q:"What is the difference between OSI (7 layers) and TCP/IP (5 layers) models?",a:"TCP/IP combines OSI layers 5-7 into Application, and layers 1-2 into Network Access",e:"TCP/IP is practical; OSI is theoretical for teaching networking concepts."},
+            he:{q:"מה ההבדל בין מודל OSI (7 שכבות) למודל TCP/IP (5 שכבות)?",a:"TCP/IP משלב את שכבות 5-7 של OSI לשכבת Application אחת, ושכבות 1-2 ל-Network Access",e:"TCP/IP הוא פרקטי; OSI הוא תיאורטי להוראת מושגי רשתות."}},
+        {id:5,category:"OSI Model",type:"mc",
+            en:{q:"Which layer handles MAC addresses and frame creation?",o:["Physical (Layer 1)","Data Link (Layer 2)","Network (Layer 3)","Transport (Layer 4)"],e:"Data Link layer (Layer 2) works with MAC addresses and creates frames."},
+            he:{q:"איזו שכבה מטפלת בכתובות MAC ויצירת Frames?",o:["Physical (שכבה 1)","Data Link (שכבה 2)","Network (שכבה 3)","Transport (שכבה 4)"],e:"שכבת Data Link (שכבה 2) עובדת עם כתובות MAC ויוצרת Frames."},correctIndex:1},
+        
+        // ===== PORTS =====
+        {id:6,category:"Ports",type:"open",
+            en:{q:"What port does SSH use by default?",a:"Port 22",e:"SSH (Secure Shell) uses TCP port 22 for secure remote access."},
+            he:{q:"באיזה פורט משתמש SSH כברירת מחדל?",a:"Port 22",e:"SSH (Secure Shell) משתמש ב-TCP פורט 22 לגישה מרחוק מאובטחת."}},
+        {id:7,category:"Ports",type:"mc",
+            en:{q:"Which port is used by HTTPS?",o:["Port 80","Port 443","Port 8080","Port 8443"],e:"HTTPS uses port 443 for encrypted web traffic."},
+            he:{q:"באיזה פורט משתמש HTTPS?",o:["Port 80","Port 443","Port 8080","Port 8443"],e:"HTTPS משתמש בפורט 443 לתעבורת אינטרנט מוצפנת."},correctIndex:1},
+        {id:8,category:"Ports",type:"open",
+            en:{q:"What ports are associated with FTP?",a:"Port 20 (data) and Port 21 (control)",e:"FTP uses port 21 for commands and 20 for data transfer."},
+            he:{q:"אילו פורטים משויכים ל-FTP?",a:"Port 20 (נתונים) ו-Port 21 (בקרה)",e:"FTP משתמש בפורט 21 לפקודות ו-20 להעברת נתונים."}},
+        {id:9,category:"Ports",type:"mc",
+            en:{q:"What is the default port for DNS?",o:["Port 23","Port 25","Port 53","Port 67"],e:"DNS uses UDP/TCP port 53 for domain name resolution."},
+            he:{q:"מהו פורט ברירת המחדל של DNS?",o:["Port 23","Port 25","Port 53","Port 67"],e:"DNS משתמש ב-UDP/TCP פורט 53 לתרגום שמות דומיין."},correctIndex:2},
+        {id:10,category:"Ports",type:"open",
+            en:{q:"What port does RDP use?",a:"Port 3389",e:"RDP uses TCP/UDP 3389 for Windows remote desktop."},
+            he:{q:"באיזה פורט משתמש RDP?",a:"Port 3389",e:"RDP משתמש ב-TCP/UDP 3389 ל-Remote Desktop של Windows."}},
+        {id:11,category:"Ports",type:"mc",
+            en:{q:"Which port is associated with SMB/CIFS file sharing?",o:["Port 389","Port 443","Port 445","Port 636"],e:"SMB/CIFS uses port 445 for Windows file sharing."},
+            he:{q:"איזה פורט משויך לשיתוף קבצים SMB/CIFS?",o:["Port 389","Port 443","Port 445","Port 636"],e:"SMB/CIFS משתמש בפורט 445 לשיתוף קבצים ב-Windows."},correctIndex:2},
+        {id:12,category:"Ports",type:"mc",
+            en:{q:"What port does Telnet use?",o:["Port 21","Port 22","Port 23","Port 25"],e:"Telnet uses port 23. SSH (22) replaced it for secure access."},
+            he:{q:"באיזה פורט משתמש Telnet?",o:["Port 21","Port 22","Port 23","Port 25"],e:"Telnet משתמש בפורט 23. SSH (22) החליף אותו לגישה מאובטחת."},correctIndex:2},
+        {id:13,category:"Ports",type:"mc",
+            en:{q:"What port does SMTP use?",o:["Port 23","Port 25","Port 53","Port 110"],e:"SMTP uses port 25 for sending email."},
+            he:{q:"באיזה פורט משתמש SMTP?",o:["Port 23","Port 25","Port 53","Port 110"],e:"SMTP משתמש בפורט 25 לשליחת דואר."},correctIndex:1},
+        {id:14,category:"Ports",type:"mc",
+            en:{q:"What port does LDAP use?",o:["Port 389","Port 443","Port 445","Port 636"],e:"LDAP uses 389 (unencrypted) or 636 (LDAPS encrypted)."},
+            he:{q:"באיזה פורט משתמש LDAP?",o:["Port 389","Port 443","Port 445","Port 636"],e:"LDAP משתמש ב-389 (לא מוצפן) או 636 (LDAPS מוצפן)."},correctIndex:0},
+        {id:15,category:"Ports",type:"open",
+            en:{q:"What ports does DHCP use?",a:"UDP ports 67 (server) and 68 (client)",e:"DHCP assigns IP addresses dynamically."},
+            he:{q:"באילו פורטים משתמש DHCP?",a:"UDP פורטים 67 (שרת) ו-68 (לקוח)",e:"DHCP מקצה כתובות IP באופן דינמי."}},
+
+        // ===== PROTOCOLS =====
+        {id:16,category:"Protocols",type:"open",
+            en:{q:"What is the difference between TCP and UDP?",a:"TCP is connection-oriented with guaranteed delivery; UDP is connectionless with no guarantee",e:"TCP: reliable, ordered, slower. UDP: fast, no handshake, for streaming/gaming."},
+            he:{q:"מה ההבדל בין TCP ל-UDP?",a:"TCP מבוסס חיבור עם אספקה מובטחת; UDP ללא חיבור וללא אחריות",e:"TCP: אמין, מסודר, איטי יותר. UDP: מהיר, ללא Handshake, לסטרימינג/משחקים."}},
+        {id:17,category:"Protocols",type:"mc",
+            en:{q:"Which protocol maps IP addresses to MAC addresses?",o:["DNS","DHCP","ARP","ICMP"],e:"ARP (Address Resolution Protocol) resolves IP to MAC addresses."},
+            he:{q:"איזה פרוטוקול ממפה כתובות IP לכתובות MAC?",o:["DNS","DHCP","ARP","ICMP"],e:"ARP מתרגם כתובות IP לכתובות MAC פיזיות."},correctIndex:2},
+        {id:18,category:"Protocols",type:"open",
+            en:{q:"What is ICMP used for?",a:"Network diagnostics and error messaging (ping, traceroute)",e:"ICMP sends error messages. Ping uses ICMP Echo Request/Reply."},
+            he:{q:"למה משמש ICMP?",a:"אבחון רשת והודעות שגיאה (ping, traceroute)",e:"ICMP שולח הודעות שגיאה. Ping משתמש ב-ICMP Echo Request/Reply."}},
+        {id:19,category:"Protocols",type:"open",
+            en:{q:"What is Kerberos used for?",a:"Network authentication using tickets in Active Directory",e:"Kerberos uses tickets to prove identity without sending passwords."},
+            he:{q:"למה משמש Kerberos?",a:"אימות רשת באמצעות Tickets ב-Active Directory",e:"Kerberos משתמש ב-Tickets להוכחת זהות ללא שליחת סיסמאות."}},
+        {id:20,category:"Protocols",type:"open",
+            en:{q:"What is DNS and why is it essential?",a:"Translates domain names to IP addresses - without it we'd memorize IPs",e:"DNS is like a phonebook for the internet."},
+            he:{q:"מהו DNS ולמה הוא חיוני?",a:"מתרגם שמות דומיין לכתובות IP - בלעדיו היינו צריכים לזכור IP-ים",e:"DNS הוא כמו ספר טלפונים לאינטרנט."}},
+
+        // ===== HTTP =====
+        {id:21,category:"HTTP",type:"mc",
+            en:{q:"Which HTTP method is used to submit data (e.g., form submission)?",o:["GET","POST","OPTIONS","HEAD"],e:"POST sends data in the request body. GET includes data in URL."},
+            he:{q:"איזו שיטת HTTP משמשת לשליחת נתונים (למשל טופס)?",o:["GET","POST","OPTIONS","HEAD"],e:"POST שולח נתונים בגוף הבקשה. GET כולל נתונים ב-URL."},correctIndex:1},
+        {id:22,category:"HTTP",type:"open",
+            en:{q:"What is the difference between HTTP and HTTPS?",a:"HTTPS adds encryption and identity verification via TLS/SSL",e:"HTTPS wraps HTTP in TLS/SSL encryption."},
+            he:{q:"מה ההבדל בין HTTP ל-HTTPS?",a:"HTTPS מוסיף הצפנה ואימות זהות באמצעות TLS/SSL",e:"HTTPS עוטף HTTP בהצפנת TLS/SSL."}},
+        {id:23,category:"HTTP",type:"open",
+            en:{q:"What information does the User-Agent header reveal?",a:"Browser type, version, OS, and device information",e:"Attackers may spoof User-Agent. Look for anomalies like curl/wget."},
+            he:{q:"איזה מידע חושף Header ה-User-Agent?",a:"סוג דפדפן, גרסה, מערכת הפעלה ומידע על המכשיר",e:"תוקפים עשויים לזייף User-Agent. חפש חריגות כמו curl/wget."}},
+
+        // ===== EDR & SECURITY TOOLS =====
+        {id:24,category:"EDR",type:"open",
+            en:{q:"What does EDR stand for and what is its purpose?",a:"Endpoint Detection and Response - monitors endpoints for suspicious activity and enables incident response",e:"EDR provides visibility, threat detection, investigation, and automated response."},
+            he:{q:"מהו EDR ומה מטרתו?",a:"Endpoint Detection and Response - מנטר נקודות קצה לזיהוי פעילות חשודה ומאפשר תגובה לאירועים",e:"EDR מספק נראות, זיהוי איומים, חקירה ותגובה אוטומטית."}},
+        {id:25,category:"EDR",type:"mc",
+            en:{q:"What is the main difference between AV and EDR?",o:["AV is for servers only","EDR provides behavioral analysis while AV focuses on signatures","AV is more expensive","EDR only works on Linux"],e:"Traditional AV relies on signatures; EDR adds behavioral analysis."},
+            he:{q:"מה ההבדל העיקרי בין AV ל-EDR?",o:["AV רק לשרתים","EDR מספק ניתוח התנהגותי בעוד AV מתמקד בחתימות","AV יקר יותר","EDR רק ל-Linux"],e:"AV מסורתי מסתמך על חתימות; EDR מוסיף ניתוח התנהגותי."},correctIndex:1},
+        {id:26,category:"SIEM",type:"open",
+            en:{q:"What is a SIEM and what is its primary function?",a:"Security Information and Event Management - collects, correlates, and analyzes logs for threat detection",e:"SIEM aggregates logs, correlates events, and alerts on suspicious patterns."},
+            he:{q:"מהו SIEM ומה תפקידו העיקרי?",a:"Security Information and Event Management - אוסף, מתאם ומנתח לוגים לזיהוי איומים",e:"SIEM מרכז לוגים, מתאם אירועים ומתריע על דפוסים חשודים."}},
+        {id:27,category:"SOAR",type:"open",
+            en:{q:"What does SOAR stand for and how does it differ from SIEM?",a:"Security Orchestration, Automation and Response - automates incident response workflows",e:"SIEM detects threats; SOAR automates the response."},
+            he:{q:"מהו SOAR ובמה הוא שונה מ-SIEM?",a:"Security Orchestration, Automation and Response - מאוטמט תהליכי תגובה לאירועים",e:"SIEM מזהה איומים; SOAR מאוטמט את התגובה."}},
+        {id:28,category:"WAF",type:"open",
+            en:{q:"What is a WAF (Web Application Firewall)?",a:"Security layer that filters HTTP traffic to protect web apps from attacks like SQLi, XSS",e:"WAF blocks OWASP Top 10 attacks at the application layer."},
+            he:{q:"מהו WAF (Web Application Firewall)?",a:"שכבת אבטחה שמסננת תעבורת HTTP להגנה על אפליקציות מהתקפות כמו SQLi, XSS",e:"WAF חוסם התקפות OWASP Top 10 בשכבת האפליקציה."}},
+        {id:29,category:"WAF vs FW",type:"mc",
+            en:{q:"What is the main difference between WAF and traditional Firewall?",o:["WAF is faster","Firewall works at Layer 7, WAF at Layer 3","WAF protects web apps at Layer 7, Firewall filters at Layer 3-4","They are the same"],e:"Traditional firewalls filter by IP/port. WAF understands HTTP."},
+            he:{q:"מה ההבדל בין WAF ל-Firewall מסורתי?",o:["WAF מהיר יותר","Firewall בשכבה 7, WAF בשכבה 3","WAF מגן על אפליקציות Web בשכבה 7, Firewall מסנן בשכבות 3-4","הם זהים"],e:"Firewalls מסורתיים מסננים לפי IP/פורט. WAF מבין HTTP."},correctIndex:2},
+
+        // ===== THREAT INTELLIGENCE =====
+        {id:30,category:"TTPs",type:"open",
+            en:{q:"What are TTPs in threat intelligence?",a:"Tactics, Techniques, and Procedures - describes adversary behavior patterns",e:"TTPs describe HOW attackers operate. More persistent than IOCs."},
+            he:{q:"מהם TTPs במודיעין איומים?",a:"Tactics, Techniques, and Procedures - מתאר דפוסי התנהגות של תוקפים",e:"TTPs מתארים איך תוקפים פועלים. יציבים יותר מ-IOCs."}},
+        {id:31,category:"IOCs",type:"mc",
+            en:{q:"Which is NOT typically an Indicator of Compromise (IOC)?",o:["Malicious IP address","File hash (MD5/SHA256)","Attack technique pattern","Malicious domain name"],e:"Attack patterns are TTPs. IOCs are specific artifacts."},
+            he:{q:"מה אינו בדרך כלל Indicator of Compromise (IOC)?",o:["כתובת IP זדונית","Hash של קובץ","דפוס טכניקת תקיפה","שם דומיין זדוני"],e:"דפוסי טכניקות הם TTPs. IOCs הם ממצאים ספציפיים."},correctIndex:2},
+        {id:32,category:"MITRE ATT&CK",type:"open",
+            en:{q:"What is the MITRE ATT&CK framework?",a:"Knowledge base of adversary tactics and techniques based on real-world observations",e:"ATT&CK catalogs attacker behaviors for threat modeling and detection."},
+            he:{q:"מהו מסגרת MITRE ATT&CK?",a:"מאגר ידע של טקטיקות וטכניקות תוקפים המבוסס על תצפיות מהעולם האמיתי",e:"ATT&CK מקטלג התנהגויות תוקפים למודלינג איומים וזיהוי."}},
+        {id:33,category:"Threat Hunting",type:"open",
+            en:{q:"What is proactive threat hunting?",a:"Actively searching for threats that evaded existing security controls",e:"Hunting assumes breach and proactively looks for hidden threats."},
+            he:{q:"מהו Threat Hunting פרואקטיבי?",a:"חיפוש יזום אחר איומים שחמקו מבקרות אבטחה קיימות",e:"Hunting מניח פריצה ומחפש באופן יזום איומים נסתרים."}},
+
+        // ===== MALWARE ANALYSIS =====
+        {id:34,category:"Analysis",type:"mc",
+            en:{q:"What is the difference between static and dynamic malware analysis?",o:["Static runs malware; dynamic examines code","Static examines code without execution; dynamic runs malware in sandbox","They are the same","Static for Windows; dynamic for Linux"],e:"Static: examine code/strings. Dynamic: execute in sandbox."},
+            he:{q:"מה ההבדל בין ניתוח Static ל-Dynamic של נוזקות?",o:["Static מריץ נוזקה; Dynamic בוחן קוד","Static בוחן קוד ללא הרצה; Dynamic מריץ בסביבה מבוקרת","הם זהים","Static ל-Windows; Dynamic ל-Linux"],e:"Static: בחינת קוד/מחרוזות. Dynamic: הרצה ב-Sandbox."},correctIndex:1},
+        {id:35,category:"Analysis",type:"open",
+            en:{q:"What is entropy in malware analysis?",a:"Measure of randomness - high entropy indicates encryption or packing",e:"Packed/encrypted malware shows high entropy (~7-8). Normal is ~5-6."},
+            he:{q:"מהי Entropy בניתוח נוזקות?",a:"מדד לאקראיות - Entropy גבוה מצביע על הצפנה או Packing",e:"נוזקות Packed/מוצפנות מראות Entropy גבוה (~7-8). רגיל ~5-6."}},
+        {id:36,category:"Analysis",type:"open",
+            en:{q:"What are PE file sections commonly analyzed?",a:".text (code), .data (initialized data), .rdata (read-only), .rsrc (resources)",e:"Malware often has unusual sections or suspicious section names."},
+            he:{q:"מהם PE File Sections שמנותחים בדרך כלל?",a:".text (קוד), .data (נתונים מאותחלים), .rdata (קריאה בלבד), .rsrc (משאבים)",e:"לנוזקות לעתים יש Sections חריגים או שמות חשודים."}},
+        {id:37,category:"Analysis",type:"mc",
+            en:{q:"What tool is commonly used for static disassembly?",o:["Wireshark","IDA Pro","Nmap","Burp Suite"],e:"IDA Pro is the industry standard for disassembly and static analysis."},
+            he:{q:"איזה כלי נפוץ ל-Disassembly סטטי?",o:["Wireshark","IDA Pro","Nmap","Burp Suite"],e:"IDA Pro הוא הסטנדרט ל-Disassembly וניתוח סטטי."},correctIndex:1},
+
+        // ===== WINDOWS =====
+        {id:38,category:"Windows API",type:"open",
+            en:{q:"What does CreateMutexA typically indicate in malware?",a:"Single instance check - prevents multiple copies from running",e:"Malware creates mutex with unique name to ensure only one instance runs."},
+            he:{q:"על מה מעיד CreateMutexA בנוזקה?",a:"בדיקת מופע יחיד - מונע הרצה של עותקים מרובים",e:"נוזקות יוצרות Mutex עם שם ייחודי להבטחת מופע אחד."}},
+        {id:39,category:"Registry",type:"open",
+            en:{q:"What registry key is commonly used for persistence?",a:"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",e:"Programs in Run keys execute at login. Check RunOnce, Services too."},
+            he:{q:"איזה מפתח Registry נפוץ ל-Persistence?",a:"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",e:"תוכניות במפתחות Run מופעלות בהתחברות. בדוק גם RunOnce, Services."}},
+        {id:40,category:"Code Injection",type:"mc",
+            en:{q:"Which Windows API sequence is used for process injection?",o:["CreateFile → WriteFile → CloseHandle","OpenProcess → VirtualAllocEx → WriteProcessMemory → CreateRemoteThread","RegOpenKey → RegSetValue → RegCloseKey","Socket → Connect → Send"],e:"Classic injection: open process, allocate memory, write, create thread."},
+            he:{q:"איזו רצפת Windows API נפוצה ל-Process Injection?",o:["CreateFile → WriteFile → CloseHandle","OpenProcess → VirtualAllocEx → WriteProcessMemory → CreateRemoteThread","RegOpenKey → RegSetValue → RegCloseKey","Socket → Connect → Send"],e:"הזרקה קלאסית: פתיחת תהליך, הקצאת זיכרון, כתיבה, יצירת Thread."},correctIndex:1},
+        {id:41,category:"Sysinternals",type:"open",
+            en:{q:"What Sysinternals tools investigate a suspicious process?",a:"Process Explorer (processes), Procmon (activity), Autoruns (persistence), Strings (content)",e:"Sysinternals provides powerful Windows internals tools."},
+            he:{q:"אילו כלי Sysinternals חוקרים תהליך חשוד?",a:"Process Explorer (תהליכים), Procmon (פעילות), Autoruns (Persistence), Strings (תוכן)",e:"Sysinternals מספק כלים עוצמתיים ל-Windows Internals."}},
+        {id:42,category:"Sysinternals",type:"mc",
+            en:{q:"What does Procmon capture?",o:["Network packets only","Real-time file system, registry, and process activity","CPU temperature","Disk health"],e:"Process Monitor shows file, registry, and process operations."},
+            he:{q:"מה Procmon לוכד?",o:["חבילות רשת בלבד","פעילות מערכת קבצים, Registry ותהליכים בזמן אמת","טמפרטורת CPU","בריאות דיסק"],e:"Process Monitor מציג פעולות קבצים, Registry ותהליכים."},correctIndex:1},
+
+        // ===== PERSISTENCE =====
+        {id:43,category:"Persistence",type:"open",
+            en:{q:"What is Windows Task Scheduler used for in attacks?",a:"Persistence - scheduled tasks run commands at specified times/events",e:"Attackers create scheduled tasks to maintain access after reboot."},
+            he:{q:"למה משמש Windows Task Scheduler בהתקפות?",a:"Persistence - משימות מתוזמנות מריצות פקודות בזמנים/אירועים מוגדרים",e:"תוקפים יוצרים משימות מתוזמנות לשמירת גישה לאחר הפעלה מחדש."}},
+        {id:44,category:"Persistence",type:"open",
+            en:{q:"What is crontab in Linux and how is it abused?",a:"Cron job scheduler - attackers add entries to execute malicious scripts",e:"Check /etc/crontab, /etc/cron.d/, and user crontabs."},
+            he:{q:"מהו crontab ב-Linux ואיך הוא מנוצל?",a:"מתזמן Cron jobs - תוקפים מוסיפים רשומות להרצת סקריפטים זדוניים",e:"בדוק /etc/crontab, /etc/cron.d/ ו-crontab של משתמשים."}},
+        {id:45,category:"LOLBins",type:"open",
+            en:{q:"What are LOLBins? Give an example.",a:"Living Off The Land Binaries - legitimate Windows binaries abused (e.g., certutil, mshta, regsvr32)",e:"LOLBins blend in as signed Microsoft binaries."},
+            he:{q:"מהם LOLBins? תן דוגמה.",a:"Living Off The Land Binaries - קבצי Windows לגיטימיים שמנוצלים (למשל: certutil, mshta, regsvr32)",e:"LOLBins משתלבים כקבצים חתומים של Microsoft."}},
+
+        // ===== NETWORK ATTACKS =====
+        {id:46,category:"Network",type:"open",
+            en:{q:"What is ARP spoofing/poisoning?",a:"Attacker sends fake ARP to associate their MAC with victim's IP, enabling MITM",e:"ARP has no authentication. Attackers can intercept traffic."},
+            he:{q:"מהו ARP Spoofing/Poisoning?",a:"תוקף שולח ARP מזויף לשייך את ה-MAC שלו ל-IP של הקורבן, מאפשר MITM",e:"ל-ARP אין אימות. תוקפים יכולים ליירט תעבורה."}},
+        {id:47,category:"Network",type:"mc",
+            en:{q:"What is DNS tunneling used for?",o:["Faster DNS resolution","Encrypting DNS queries","Exfiltrating data or C2 through DNS queries","Blocking malicious domains"],e:"DNS tunneling encodes data in DNS to bypass firewalls."},
+            he:{q:"למה משמש DNS Tunneling?",o:["רזולוציית DNS מהירה","הצפנת שאילתות DNS","הברחת מידע או C2 דרך שאילתות DNS","חסימת דומיינים זדוניים"],e:"DNS Tunneling מקודד מידע ב-DNS לעקיפת Firewalls."},correctIndex:2},
+        {id:48,category:"TOR",type:"open",
+            en:{q:"How does TOR provide anonymity?",a:"Routes traffic through multiple encrypted relays, each knowing only previous and next hop",e:"Onion routing: Entry knows source, exit knows destination, no node knows both."},
+            he:{q:"איך TOR מספק אנונימיות?",a:"מנתב תעבורה דרך מספר ממסרים מוצפנים, כל אחד יודע רק את הקודם והבא",e:"Onion Routing: צומת כניסה יודע מקור, יציאה יודע יעד, אף צומת לא יודע שניהם."}},
+
+        // ===== ATTACK TOOLS =====
+        {id:49,category:"Tools",type:"open",
+            en:{q:"What is Mimikatz used for?",a:"Credential extraction from Windows memory - dumps passwords, hashes, Kerberos tickets",e:"Mimikatz can do pass-the-hash, golden ticket attacks."},
+            he:{q:"למה משמש Mimikatz?",a:"חילוץ Credentials מזיכרון Windows - מוציא סיסמאות, Hash-ים, Kerberos Tickets",e:"Mimikatz יכול לבצע Pass-the-Hash, התקפות Golden Ticket."}},
+        {id:50,category:"Tools",type:"mc",
+            en:{q:"What is BloodHound used for?",o:["Network scanning","Mapping AD attack paths and privilege escalation","Password cracking","Malware sandboxing"],e:"BloodHound reveals hidden attack paths in Active Directory."},
+            he:{q:"למה משמש BloodHound?",o:["סריקת רשת","מיפוי נתיבי תקיפה והסלמת הרשאות ב-AD","פיצוח סיסמאות","Sandboxing של נוזקות"],e:"BloodHound חושף נתיבי תקיפה נסתרים ב-Active Directory."},correctIndex:1},
+        {id:51,category:"Shells",type:"open",
+            en:{q:"What is a reverse shell and why prefer it?",a:"Target initiates connection back to attacker - bypasses inbound firewall rules",e:"Outbound connections often allowed. Attacker listens; victim connects out."},
+            he:{q:"מהו Reverse Shell ולמה מעדיפים אותו?",a:"היעד יוזם חיבור חזרה לתוקף - עוקף כללי Firewall נכנסים",e:"חיבורים יוצאים לעתים מותרים. התוקף מאזין; הקורבן מתחבר החוצה."}},
+        {id:52,category:"Shells",type:"open",
+            en:{q:"What is a backdoor?",a:"Hidden access method bypassing normal authentication for persistent unauthorized access",e:"Backdoors: added accounts, modified binaries, webshells, malicious services."},
+            he:{q:"מהו Backdoor?",a:"שיטת גישה נסתרת שעוקפת אימות רגיל לגישה לא מורשית מתמשכת",e:"Backdoors: חשבונות נוספים, קבצים שונו, Webshells, שירותים זדוניים."}},
+
+        // ===== DEFENSE =====
+        {id:53,category:"Defense",type:"mc",
+            en:{q:"What is the purpose of a DMZ?",o:["Direct connection to internet","Isolated segment for public-facing services","Encrypted VPN tunnel","Backup segment"],e:"DMZ hosts public services with restricted access to internal network."},
+            he:{q:"מה מטרת DMZ?",o:["חיבור ישיר לאינטרנט","מקטע מבודד לשירותים פונים לציבור","מנהרת VPN מוצפנת","מקטע גיבוי"],e:"DMZ מארח שירותים ציבוריים עם גישה מוגבלת לרשת הפנימית."},correctIndex:1},
+        {id:54,category:"Defense",type:"open",
+            en:{q:"What is DLP (Data Loss Prevention)?",a:"Technology detecting and preventing unauthorized transfer of sensitive data",e:"DLP monitors data in motion, at rest, and in use."},
+            he:{q:"מהו DLP (Data Loss Prevention)?",a:"טכנולוגיה שמזהה ומונעת העברה לא מורשית של מידע רגיש",e:"DLP מנטר מידע בתנועה, במנוחה ובשימוש."}},
+        {id:55,category:"Honeypots",type:"open",
+            en:{q:"What is a honeypot and what are bogus IP traps?",a:"Decoy systems to attract attackers. Bogus IPs trigger alerts when accessed.",e:"No legitimate traffic should touch honeypots. Any access indicates breach."},
+            he:{q:"מהו Honeypot ומהם Bogus IP Traps?",a:"מערכות פיתוי למשוך תוקפים. Bogus IPs מפעילים התראה כשניגשים אליהם.",e:"אין תעבורה לגיטימית ל-Honeypots. כל גישה מצביעה על פריצה."}},
+        {id:56,category:"VPN",type:"mc",
+            en:{q:"What is the primary security benefit of a VPN?",o:["Faster internet","Encrypted tunnel protecting data in transit","Antivirus protection","Firewall bypass"],e:"VPN encrypts traffic between endpoints."},
+            he:{q:"מהו היתרון האבטחתי העיקרי של VPN?",o:["אינטרנט מהיר יותר","מנהרה מוצפנת המגינה על מידע בתנועה","הגנת אנטי-וירוס","עקיפת Firewall"],e:"VPN מצפין תעבורה בין נקודות קצה."},correctIndex:1},
+        {id:57,category:"Defense",type:"open",
+            en:{q:"What is NAC (Network Access Control)?",a:"Security solution enforcing policy compliance before allowing network connection",e:"NAC checks device health, authentication, and compliance."},
+            he:{q:"מהו NAC (Network Access Control)?",a:"פתרון אבטחה שאוכף עמידה במדיניות לפני הרשאת חיבור לרשת",e:"NAC בודק בריאות מכשיר, אימות ותאימות."}},
+        {id:58,category:"Email",type:"open",
+            en:{q:"What is a Mail Relay and why is it a security concern?",a:"Server forwarding email - open relays can be abused for spam/phishing",e:"Secure mail relays require authentication."},
+            he:{q:"מהו Mail Relay ולמה הוא סיכון אבטחתי?",a:"שרת שמעביר דואר - Open Relays יכולים להיות מנוצלים לספאם/פישינג",e:"שרתי דואר מאובטחים דורשים אימות."}},
+
+        // ===== DETECTION =====
+        {id:59,category:"Detection",type:"mc",
+            en:{q:"A SIEM alert fires on legitimate admin activity. This is a:",o:["True Positive","False Positive","True Negative","False Negative"],e:"False Positive: alert triggered but no actual threat."},
+            he:{q:"התראת SIEM נורתה על פעילות Admin לגיטימית. זהו:",o:["True Positive","False Positive","True Negative","False Negative"],e:"False Positive: התראה נורתה אבל אין איום אמיתי."},correctIndex:1},
+        {id:60,category:"Detection",type:"open",
+            en:{q:"What is True Positive vs False Negative?",a:"True Positive: correctly identified threat. False Negative: missed a real threat (dangerous!)",e:"FNs are worst - actual attacks going undetected."},
+            he:{q:"מה ההבדל בין True Positive ל-False Negative?",a:"True Positive: זיהוי נכון של איום. False Negative: החמצת איום אמיתי (מסוכן!)",e:"FN הם הגרועים - התקפות שלא מזוהות."}},
+        {id:61,category:"YARA",type:"open",
+            en:{q:"What are YARA rules used for?",a:"Pattern matching to identify malware by strings, byte patterns, or conditions",e:"YARA rules describe malware families."},
+            he:{q:"למה משמשים חוקי YARA?",a:"התאמת דפוסים לזיהוי נוזקות לפי מחרוזות, דפוסי בתים או תנאים",e:"חוקי YARA מתארים משפחות נוזקות."}},
+        {id:62,category:"Logging",type:"open",
+            en:{q:"What Windows Event ID indicates a successful logon?",a:"Event ID 4624",e:"4624 = success, 4625 = failed. Check logon type: 2=interactive, 3=network, 10=RDP."},
+            he:{q:"איזה Windows Event ID מציין התחברות מוצלחת?",a:"Event ID 4624",e:"4624 = הצלחה, 4625 = נכשלה. בדוק Logon Type: 2=interactive, 3=network, 10=RDP."}},
+        {id:63,category:"Logging",type:"mc",
+            en:{q:"In Windows logon events, what does Logon Type 3 indicate?",o:["Interactive (keyboard)","Network logon (SMB, mapped drive)","Batch (scheduled task)","Remote Desktop"],e:"Type 3 = network logon. Type 2 = interactive. Type 10 = RDP."},
+            he:{q:"באירועי התחברות Windows, על מה מצביע Logon Type 3?",o:["Interactive (מקלדת)","Network Logon (SMB, כונן ממופה)","Batch (משימה מתוזמנת)","Remote Desktop"],e:"Type 3 = התחברות רשת. Type 2 = Interactive. Type 10 = RDP."},correctIndex:1},
+        {id:64,category:"Logging",type:"open",
+            en:{q:"What are the key Windows Logon Types to know? (2, 3, 10)",a:"Type 2: Interactive (local). Type 3: Network (SMB). Type 10: RDP",e:"Understanding logon types helps identify how attackers accessed systems."},
+            he:{q:"מהם סוגי ההתחברות העיקריים ב-Windows? (2, 3, 10)",a:"Type 2: Interactive (מקומי). Type 3: Network (SMB). Type 10: RDP",e:"הבנת סוגי התחברות עוזרת לזהות איך תוקפים ניגשו למערכת."}},
+
+        // ===== CVE & VULNERABILITIES =====
+        {id:65,category:"CVE",type:"open",
+            en:{q:"What is a CVE?",a:"Common Vulnerabilities and Exposures - standardized identifier for security flaws",e:"Format: CVE-YEAR-NUMBER (e.g., CVE-2021-44228 = Log4Shell)."},
+            he:{q:"מהו CVE?",a:"Common Vulnerabilities and Exposures - מזהה סטנדרטי לפגיעויות אבטחה",e:"פורמט: CVE-YEAR-NUMBER (למשל CVE-2021-44228 = Log4Shell)."}},
+        {id:66,category:"CVE",type:"open",
+            en:{q:"What is a POC (Proof of Concept) in security?",a:"Code or method demonstrating a vulnerability can be exploited",e:"POCs prove exploitability. Can be weaponized into exploits."},
+            he:{q:"מהו POC (Proof of Concept) באבטחה?",a:"קוד או שיטה שמדגימים שפגיעות ניתנת לניצול",e:"POC מוכיחים יכולת ניצול. יכולים להפוך ל-Exploits."}},
+        {id:67,category:"Tools",type:"mc",
+            en:{q:"What is Nessus primarily used for?",o:["Password cracking","Vulnerability scanning","Packet capture","Malware sandboxing"],e:"Nessus scans for vulnerabilities, misconfigurations, and compliance."},
+            he:{q:"למה משמש Nessus בעיקר?",o:["פיצוח סיסמאות","סריקת פגיעויות","לכידת חבילות","Sandboxing של נוזקות"],e:"Nessus סורק פגיעויות, תצורות שגויות ותאימות."},correctIndex:1},
+
+        // ===== APT & THREAT ACTORS =====
+        {id:68,category:"Threats",type:"open",
+            en:{q:"What is an APT (Advanced Persistent Threat)?",a:"Sophisticated long-term attack by well-resourced actors targeting specific organizations",e:"APTs use custom malware, zero-days, maintain access for months/years."},
+            he:{q:"מהו APT (Advanced Persistent Threat)?",a:"התקפה מתוחכמת ארוכת טווח על ידי שחקנים עם משאבים המכוונת לארגונים ספציפיים",e:"APT משתמשים בנוזקות מותאמות, Zero-days, שומרים גישה חודשים/שנים."}},
+        {id:69,category:"TLP",type:"mc",
+            en:{q:"What does TLP:RED mean in threat intelligence?",o:["Share freely","Share within organization only","Not for disclosure - participants only","Share with community"],e:"TLP:RED = most restricted. AMBER = limited. GREEN = community. CLEAR = public."},
+            he:{q:"מה המשמעות של TLP:RED במודיעין איומים?",o:["שתף בחופשיות","שתף בארגון בלבד","לא לחשיפה - משתתפים בלבד","שתף עם הקהילה"],e:"TLP:RED = מוגבל ביותר. AMBER = מוגבל. GREEN = קהילה. CLEAR = ציבורי."},correctIndex:2},
+
+        // ===== ADDITIONAL =====
+        {id:70,category:"Keyloggers",type:"open",
+            en:{q:"What is a keylogger and how can it be detected?",a:"Software/hardware capturing keystrokes. Detect via suspicious processes, API hooks, USB devices",e:"Keyloggers may use SetWindowsHookEx API."},
+            he:{q:"מהו Keylogger ואיך לזהות אותו?",a:"תוכנה/חומרה שמקליטה הקשות. זיהוי: תהליכים חשודים, API Hooks, התקני USB",e:"Keyloggers עשויים להשתמש ב-SetWindowsHookEx API."}},
+        {id:71,category:"Drivers",type:"open",
+            en:{q:"Why are malicious drivers dangerous?",a:"Drivers run in kernel mode with highest privileges, can bypass security tools",e:"Kernel rootkits hard to detect. Windows requires signed drivers."},
+            he:{q:"למה Drivers זדוניים מסוכנים?",a:"Drivers רצים במצב Kernel עם הרשאות גבוהות, יכולים לעקוף כלי אבטחה",e:"Kernel Rootkits קשים לזיהוי. Windows דורש Drivers חתומים."}},
+        {id:72,category:"Files",type:"mc",
+            en:{q:"What does 'rwx' represent in Linux file permissions?",o:["Read, Write, Execute permissions","Root, Web, Xterm access","Recursive, Wide, Xclusive mode","Remote, Wireless, Xfer protocol"],e:"r=read(4), w=write(2), x=execute(1). 755 = rwxr-xr-x."},
+            he:{q:"מה מייצג 'rwx' בהרשאות קבצים ב-Linux?",o:["הרשאות Read, Write, Execute","גישת Root, Web, Xterm","מצב Recursive, Wide, Xclusive","פרוטוקול Remote, Wireless, Xfer"],e:"r=read(4), w=write(2), x=execute(1). 755 = rwxr-xr-x."},correctIndex:0},
+        {id:73,category:"Files",type:"open",
+            en:{q:"What is the hosts file and how is it abused?",a:"/etc/hosts or C:\\Windows\\System32\\drivers\\etc\\hosts - malware adds entries to redirect traffic",e:"Hosts file takes precedence over DNS."},
+            he:{q:"מהו קובץ ה-Hosts ואיך הוא מנוצל?",a:"/etc/hosts או C:\\Windows\\System32\\drivers\\etc\\hosts - נוזקות מוסיפות רשומות להפניית תעבורה",e:"קובץ Hosts קודם ל-DNS."}},
+        {id:74,category:"Linux",type:"open",
+            en:{q:"What are shadow files in Linux?",a:"/etc/shadow stores hashed passwords, readable only by root",e:"Attackers with root dump shadow file for offline cracking."},
+            he:{q:"מהם קבצי Shadow ב-Linux?",a:"/etc/shadow מאחסן סיסמאות מוצפנות, קריא רק ל-root",e:"תוקפים עם root מוציאים קובץ Shadow לפיצוח Offline."}},
+        {id:75,category:"Network",type:"open",
+            en:{q:"What is a FQDN?",a:"Fully Qualified Domain Name - complete domain specifying exact DNS location (e.g., mail.example.com.)",e:"FQDN includes hostname + all domain levels + root (trailing dot)."},
+            he:{q:"מהו FQDN?",a:"Fully Qualified Domain Name - שם דומיין מלא המציין מיקום מדויק ב-DNS (למשל: mail.example.com.)",e:"FQDN כולל שם מארח + כל רמות הדומיין + שורש (נקודה סופית)."}},
+        {id:76,category:"Protocols",type:"open",
+            en:{q:"What is IPv6 and why important for security?",a:"128-bit IP addresses. Security: may bypass IPv4-only controls.",e:"Many networks have IPv6 enabled by default."},
+            he:{q:"מהו IPv6 ולמה חשוב לאבטחה?",a:"כתובות IP של 128 ביט. אבטחה: עשוי לעקוף בקרות IPv4-only.",e:"רשתות רבות מפעילות IPv6 כברירת מחדל."}},
+        {id:77,category:"Analysis",type:"open",
+            en:{q:"What is a thread in process execution?",a:"Smallest unit of execution - processes can have multiple threads sharing memory",e:"Malware creates remote threads for injection. Monitor CreateRemoteThread."},
+            he:{q:"מהו Thread בהרצת תהליכים?",a:"יחידת ההרצה הקטנה ביותר - לתהליכים יכולים להיות מספר Threads המשתפים זיכרון",e:"נוזקות יוצרות Remote Threads להזרקה. נטר CreateRemoteThread."}},
+        {id:78,category:"Active Directory",type:"open",
+            en:{q:"What is Active Directory and why is it a prime target?",a:"Microsoft directory service managing users/computers. Compromising AD = controlling entire domain",e:"AD is the keys to the kingdom."},
+            he:{q:"מהו Active Directory ולמה הוא יעד מרכזי?",a:"שירות Directory של Microsoft לניהול משתמשים/מחשבים. פריצה ל-AD = שליטה בכל הדומיין",e:"AD הוא המפתח לממלכה."}},
+        {id:79,category:"Defense",type:"open",
+            en:{q:"What services are typically placed in a DMZ?",a:"Web servers, mail servers, DNS servers, FTP servers - public-facing services",e:"DMZ isolates public services from internal network."},
+            he:{q:"אילו שירותים ממוקמים בדרך כלל ב-DMZ?",a:"שרתי Web, שרתי דואר, שרתי DNS, שרתי FTP - שירותים פונים לציבור",e:"DMZ מבודד שירותים ציבוריים מהרשת הפנימית."}},
+        {id:80,category:"Cache",type:"open",
+            en:{q:"What is browser cache and what are cookies used for?",a:"Cache: stores files for faster loading. Cookies: session data, preferences, tracking",e:"Both can leak info. Clear during investigations."},
+            he:{q:"מהו Cache של דפדפן ולמה משמשים Cookies?",a:"Cache: מאחסן קבצים לטעינה מהירה. Cookies: נתוני Session, העדפות, מעקב",e:"שניהם יכולים לדלוף מידע. נקה בחקירות."}}
+    ];
+    
+    // ═══════════════════════════════════════════════════════════════
+    // STATE MANAGEMENT
+    // ═══════════════════════════════════════════════════════════════
+    
+    const STORAGE_KEY = 'soc_learner_v2';
+    const LANG_KEY = 'soc_learner_lang';
+    const KNOWLEDGE = { UNKNOWN: 'unknown', PARTIAL: 'partial', KNOWN: 'known' };
+    
+    let currentLang = localStorage.getItem(LANG_KEY) || 'en';
+    let state = loadState();
+    let currentQuestion = null;
+    let answerRevealed = false;
+    
+    function loadState() {
+        try {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) return JSON.parse(saved);
+        } catch(e) {}
+        return { questions: {}, position: 0, session: 0, queue: [], history: [], historyIdx: -1, lastId: null };
+    }
+    
+    function saveState() {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+    }
+    
+    function resetState() {
+        state = { questions: {}, position: 0, session: 0, queue: [], history: [], historyIdx: -1, lastId: null };
+        saveState();
+    }
+    
+    function getQState(id) {
+        if (!state.questions[id]) state.questions[id] = { knowledge: KNOWLEDGE.UNKNOWN, lastSeen: null, scheduled: null, times: 0 };
+        return state.questions[id];
+    }
+    
+    function updateQuestion(id, knowledge) {
+        const qs = getQState(id);
+        qs.knowledge = knowledge;
+        qs.lastSeen = state.position;
+        qs.times++;
+        
+        // Remove from queue first
+        state.queue = state.queue.filter(q => q.id !== id);
+        
+        if (knowledge === KNOWLEDGE.UNKNOWN) {
+            qs.scheduled = state.position + Math.floor(Math.random() * 3) + 1;
+            state.queue.push({ id, pos: qs.scheduled });
+        } else if (knowledge === KNOWLEDGE.PARTIAL) {
+            qs.scheduled = state.position + Math.floor(Math.random() * 5) + 1;
+            state.queue.push({ id, pos: qs.scheduled });
+        } else {
+            qs.scheduled = null;
+        }
+        
+        state.queue.sort((a, b) => a.pos - b.pos);
+        state.position++;
+        state.session++;
+        state.lastId = id;
+        saveState();
+    }
+    
+    // ═══════════════════════════════════════════════════════════════
+    // QUESTION SCHEDULER
+    // ═══════════════════════════════════════════════════════════════
+    
+    function getNextQuestion() {
+        const pos = state.position;
+        const lastId = state.lastId;
+        
+        // Priority 1: Due from queue
+        const due = state.queue.filter(q => q.pos <= pos && q.id !== lastId);
+        if (due.length > 0) {
+            state.queue = state.queue.filter(q => q.id !== due[0].id);
+            saveState();
+            return QUESTIONS.find(q => q.id === due[0].id);
+        }
+        
+        // Priority 2: Unseen
+        const unseen = QUESTIONS.filter(q => {
+            const qs = state.questions[q.id];
+            return (!qs || qs.lastSeen === null) && q.id !== lastId && !state.queue.some(qe => qe.id === q.id);
+        });
+        if (unseen.length > 0) return unseen[Math.floor(Math.random() * unseen.length)];
+        
+        // Priority 3: Unknown
+        const unknown = QUESTIONS.filter(q => {
+            const qs = state.questions[q.id];
+            return qs && qs.knowledge === KNOWLEDGE.UNKNOWN && q.id !== lastId && !state.queue.some(qe => qe.id === q.id);
+        });
+        if (unknown.length > 0) return unknown[Math.floor(Math.random() * unknown.length)];
+        
+        // Priority 4: Partial
+        const partial = QUESTIONS.filter(q => {
+            const qs = state.questions[q.id];
+            return qs && qs.knowledge === KNOWLEDGE.PARTIAL && q.id !== lastId && !state.queue.some(qe => qe.id === q.id);
+        });
+        if (partial.length > 0) return partial[Math.floor(Math.random() * partial.length)];
+        
+        // Priority 5: Known (oldest first)
+        const known = QUESTIONS.filter(q => {
+            const qs = state.questions[q.id];
+            return qs && qs.knowledge === KNOWLEDGE.KNOWN && q.id !== lastId;
+        }).sort((a, b) => (state.questions[a.id]?.lastSeen || 0) - (state.questions[b.id]?.lastSeen || 0));
+        if (known.length > 0) return known[0];
+        
+        return QUESTIONS.filter(q => q.id !== lastId)[0] || QUESTIONS[0];
+    }
+    
+    // ═══════════════════════════════════════════════════════════════
+    // UI RENDERING
+    // ═══════════════════════════════════════════════════════════════
+    
+    function updateStats() {
+        let known = 0, partial = 0, unknown = 0, unseen = 0;
+        QUESTIONS.forEach(q => {
+            const qs = state.questions[q.id];
+            if (!qs || qs.lastSeen === null) unseen++;
+            else if (qs.knowledge === KNOWLEDGE.KNOWN) known++;
+            else if (qs.knowledge === KNOWLEDGE.PARTIAL) partial++;
+            else unknown++;
+        });
+        
+        const progress = Math.round(((known + partial * 0.5) / QUESTIONS.length) * 100);
+        document.getElementById('progress-stat').textContent = progress + '%';
+        document.getElementById('known-stat').textContent = known;
+        document.getElementById('learning-stat').textContent = partial + unknown;
+        document.getElementById('session-stat').textContent = state.session;
+    }
+    
+    function showStartScreen() {
+        const hasProgress = state.session > 0;
+        document.getElementById('main-content').innerHTML = `
+            <div class="question-card start-screen">
+                <h2>// INITIALIZE TRAINING</h2>
+                <div class="lang-select">
+                    <button class="lang-btn ${currentLang === 'en' ? 'active' : ''}" data-lang="en">🇬🇧 English</button>
+                    <button class="lang-btn ${currentLang === 'he' ? 'active' : ''}" data-lang="he">🇮🇱 עברית</button>
+                </div>
+                <p>${hasProgress ? `${QUESTIONS.length} threat scenarios loaded. Resume your training session.` : `${QUESTIONS.length} SOC scenarios ready for analysis.`}</p>
+                <button class="start-btn" id="start-btn">${hasProgress ? '▶ RESUME SESSION' : '▶ BEGIN TRAINING'}</button>
+                ${hasProgress ? '<button class="reset-btn" id="reset-btn">[ RESET_DATA ]</button>' : ''}
+            </div>
+        `;
+        
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                currentLang = btn.dataset.lang;
+                localStorage.setItem(LANG_KEY, currentLang);
+                document.body.classList.toggle('rtl', currentLang === 'he');
+                showStartScreen();
+            });
+        });
+        
+        document.getElementById('start-btn').addEventListener('click', showNextQuestion);
+        document.getElementById('reset-btn')?.addEventListener('click', () => {
+            if (confirm('Reset all progress?')) { resetState(); updateStats(); showStartScreen(); }
+        });
+        
+        document.getElementById('back-btn').disabled = true;
+    }
+    
+    function showNextQuestion() {
+        currentQuestion = getNextQuestion();
+        answerRevealed = false;
+        
+        state.history = state.history.slice(0, state.historyIdx + 1);
+        state.history.push(currentQuestion.id);
+        state.historyIdx = state.history.length - 1;
+        if (state.history.length > 100) { state.history = state.history.slice(-100); state.historyIdx = state.history.length - 1; }
+        saveState();
+        
+        renderQuestion();
+        updateBackButton();
+        updateDebug();
+    }
+    
+    function showQuestion(id) {
+        currentQuestion = QUESTIONS.find(q => q.id === id);
+        answerRevealed = false;
+        renderQuestion();
+        updateBackButton();
+        updateDebug();
+    }
+    
+    function renderQuestion() {
+        const q = currentQuestion;
+        const content = q[currentLang];
+        const qs = getQState(q.id);
+        const isRTL = currentLang === 'he';
+        const stateLabel = qs.lastSeen === null ? '◆ NEW' : qs.knowledge === KNOWLEDGE.KNOWN ? '✓ KNOWN' : qs.knowledge === KNOWLEDGE.PARTIAL ? '⟳ LEARNING' : '⚠ REVIEW';
+        
+        let html = `<div class="question-card" ${isRTL ? 'dir="rtl"' : ''}>
+            <div class="question-meta">
+                <span class="question-category">${q.category}</span>
+                <span class="question-type">${q.type === 'mc' ? '[ MULTI-SELECT ]' : '[ OPEN-RESPONSE ]'} · ${stateLabel}</span>
+            </div>
+            <div class="question-text">${escapeHtml(content.q)}</div>`;
+        
+        if (q.type === 'mc') {
+            html += '<div class="options-container" id="options">';
+            content.o.forEach((opt, i) => {
+                html += `<button class="option-btn" data-idx="${i}">${escapeHtml(opt)}</button>`;
+            });
+            html += '</div>';
+        } else {
+            html += `<textarea class="answer-input" id="user-answer" placeholder="${isRTL ? '> הזן תשובתך...' : '> Enter your analysis...'}"></textarea>
+                <button class="submit-btn" id="reveal-btn">${isRTL ? '▶ גלה תשובה' : '▶ REVEAL INTEL'}</button>`;
+        }
+        
+        const answerText = q.type === 'mc' ? content.o[q.correctIndex] : content.a;
+        html += `<div class="answer-section" id="answer-section">
+                <div class="answer-label">${isRTL ? 'פתרון מאומת' : 'VERIFIED INTEL'}</div>
+                <div class="correct-answer">${escapeHtml(answerText)}<br><br><em>${escapeHtml(content.e)}</em></div>
+            </div>
+            <div class="feedback-section" id="feedback-section">
+                <div class="feedback-label">${isRTL ? 'דרג את הידע שלך:' : '// RATE YOUR KNOWLEDGE:'}</div>
+                <div class="feedback-buttons">
+                    <button class="feedback-btn didnt-know" data-k="unknown">${isRTL ? '✗ לא ידעתי' : "✗ UNKNOWN"}</button>
+                    <button class="feedback-btn partial" data-k="partial">${isRTL ? '◐ חלקית' : '◐ PARTIAL'}</button>
+                    <button class="feedback-btn knew" data-k="known">${isRTL ? '✓ ידעתי' : '✓ CONFIRMED'}</button>
+                </div>
+            </div>
+        </div>`;
+        
+        document.getElementById('main-content').innerHTML = html;
+        
+        if (q.type === 'mc') {
+            document.querySelectorAll('.option-btn').forEach(btn => btn.addEventListener('click', selectOption));
+        } else {
+            document.getElementById('reveal-btn').addEventListener('click', revealAnswer);
+        }
+        
+        document.querySelectorAll('.feedback-btn').forEach(btn => btn.addEventListener('click', submitFeedback));
+    }
+    
+    function selectOption(e) {
+        if (answerRevealed) return;
+        const idx = parseInt(e.target.dataset.idx);
+        document.querySelectorAll('.option-btn').forEach((btn, i) => {
+            btn.classList.remove('selected');
+            if (i === idx) btn.classList.add('selected');
+        });
+        revealAnswer();
+        document.querySelectorAll('.option-btn').forEach((btn, i) => {
+            btn.classList.add('disabled');
+            if (i === currentQuestion.correctIndex) btn.classList.add('correct');
+            else if (i === idx && i !== currentQuestion.correctIndex) btn.classList.add('incorrect');
+        });
+    }
+    
+    function revealAnswer() {
+        answerRevealed = true;
+        document.getElementById('answer-section').classList.add('visible');
+        document.getElementById('feedback-section').classList.add('visible');
+        const revealBtn = document.getElementById('reveal-btn');
+        if (revealBtn) { revealBtn.disabled = true; revealBtn.textContent = currentLang === 'he' ? '✓ נחשף' : '✓ INTEL REVEALED'; }
+    }
+    
+    function submitFeedback(e) {
+        updateQuestion(currentQuestion.id, e.target.dataset.k);
+        updateStats();
+        showNextQuestion();
+    }
+    
+    function updateBackButton() {
+        document.getElementById('back-btn').disabled = state.historyIdx <= 0;
+    }
+    
+    function goBack() {
+        if (state.historyIdx > 0) {
+            state.historyIdx--;
+            saveState();
+            showQuestion(state.history[state.historyIdx]);
+        }
+    }
+    
+    function updateDebug() {
+        if (!document.getElementById('debug-panel').classList.contains('visible')) return;
+        const q = currentQuestion;
+        const qs = getQState(q.id);
+        const queueHtml = state.queue.slice(0, 10).map(item => `  ${item.pos <= state.position ? '→' : ' '} ID:${item.id} @pos ${item.pos}${item.pos <= state.position ? ' (DUE)' : ''}`).join('\n');
+        
+        document.getElementById('debug-content').innerHTML = `
+            <div class="debug-section"><strong>// ACTIVE_QUERY</strong><pre>
+<span class="debug-key">QUERY_ID:</span> <span class="debug-number">${q.id}</span>
+<span class="debug-key">CATEGORY:</span> <span class="debug-value">${q.category}</span>
+<span class="debug-key">TYPE:</span> <span class="debug-value">${q.type}</span>
+<span class="debug-key">STATUS:</span> <span class="debug-value">${qs.knowledge}</span>
+<span class="debug-key">ATTEMPTS:</span> <span class="debug-number">${qs.times}</span>
+<span class="debug-key">LAST_ACCESS:</span> <span class="debug-number">${qs.lastSeen ?? 'null'}</span>
+<span class="debug-key">NEXT_SCHED:</span> <span class="debug-number">${qs.scheduled ?? 'null'}</span></pre></div>
+            <div class="debug-section"><strong>// SESSION_DATA</strong><pre>
+<span class="debug-key">POSITION:</span> <span class="debug-number">${state.position}</span>
+<span class="debug-key">ITERATIONS:</span> <span class="debug-number">${state.session}</span></pre></div>
+            <div class="debug-section"><strong>// PRIORITY_QUEUE [${state.queue.length}]</strong><pre>${queueHtml || '  [ EMPTY ]'}</pre></div>`;
+    }
+    
+    function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML.replace(/\n/g, '<br>'); }
+    
+    // ═══════════════════════════════════════════════════════════════
+    // INIT
+    // ═══════════════════════════════════════════════════════════════
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        document.body.classList.toggle('rtl', currentLang === 'he');
+        document.getElementById('back-btn').addEventListener('click', goBack);
+        document.getElementById('skip-btn').addEventListener('click', showNextQuestion);
+        document.getElementById('debug-toggle').addEventListener('click', () => {
+            document.getElementById('debug-panel').classList.toggle('visible');
+            updateDebug();
+        });
+        updateStats();
+        showStartScreen();
+    });
+    </script>
+</body>
+</html>

@@ -1,0 +1,187 @@
+═══════════════════════════════════════════════════════════════════════════════
+SOC CONCEPT LEARNER - Instructions
+═══════════════════════════════════════════════════════════════════════════════
+
+QUICK START
+───────────
+1. Open soc-learner.html in any modern web browser
+2. Click "Start Learning" to begin
+3. Answer questions and rate your knowledge after each one
+4. The app remembers your progress automatically
+
+═══════════════════════════════════════════════════════════════════════════════
+
+HOW THE LEARNING SYSTEM WORKS
+─────────────────────────────
+
+After answering each question, you rate your knowledge:
+
+  [Didn't Know]    → Question reappears within the next 3 questions
+  [Partially Knew] → Question reappears within the next 5 questions  
+  [Knew It]        → Question is deprioritized and shown less frequently
+
+This spaced repetition system ensures you focus on concepts you're struggling 
+with while maintaining review of known material.
+
+QUESTION PRIORITY ORDER:
+1. Scheduled questions (from "Didn't Know" / "Partially Knew")
+2. Never-seen questions
+3. Unknown questions (not yet scheduled)
+4. Partially known questions (not yet scheduled)
+5. Known questions (oldest seen first)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+DATA MODEL
+──────────
+
+Each question stores:
+  - knowledge: 'unknown' | 'partial' | 'known'
+  - lastSeen: position number when last answered
+  - scheduledPosition: when it should appear next (if scheduled)
+  - timesAnswered: how many times you've answered it
+
+All data is stored in your browser's localStorage under the key 
+'soc_learner_data'. Clearing browser data will reset your progress.
+
+═══════════════════════════════════════════════════════════════════════════════
+
+ADDING OR EDITING QUESTIONS
+───────────────────────────
+
+Questions are embedded in the HTML file in the QUESTIONS array.
+To add or edit questions, open soc-learner.html in a text editor.
+
+QUESTION FORMAT:
+
+For OPEN-ENDED questions:
+─────────────────────────
+{
+    id: "unique-id-here",
+    category: "Category Name",
+    type: "open",
+    difficulty: "easy" | "medium" | "hard",
+    question: "The question text here?",
+    answer: "The complete correct answer here."
+}
+
+For MULTIPLE-CHOICE questions:
+──────────────────────────────
+{
+    id: "unique-id-here",
+    category: "Category Name", 
+    type: "multiple-choice",
+    difficulty: "easy" | "medium" | "hard",
+    question: "The question text here?",
+    options: ["Option A", "Option B", "Option C", "Option D"],
+    correctIndex: 0,  // Index of correct answer (0-based)
+    answer: "Explanation of why this answer is correct."
+}
+
+For HEBREW questions (right-to-left):
+─────────────────────────────────────
+Add: lang: "he" to the question object
+
+IMPORTANT:
+- Each question MUST have a unique id
+- Do NOT remove the trailing comma after each question object
+- Test the file after adding questions to ensure no syntax errors
+
+═══════════════════════════════════════════════════════════════════════════════
+
+DEBUG VIEW
+──────────
+
+Click [debug] in the bottom navigation to see:
+- Current question ID and state
+- Knowledge state and scheduling info
+- Priority queue contents
+- Overall learning statistics
+
+This helps you understand how the repetition system is working.
+
+═══════════════════════════════════════════════════════════════════════════════
+
+TIPS FOR EFFECTIVE LEARNING
+───────────────────────────
+
+1. Be honest with your self-assessment
+   - "Didn't Know" if you couldn't answer without the hint
+   - "Partially Knew" if you had the right idea but missed details
+   - "Knew It" only if you could explain it fully
+
+2. Take your time
+   - This isn't a speed test
+   - Read the full correct answer even if you knew it
+   - Connect concepts to real-world SOC scenarios
+
+3. Review regularly
+   - Short daily sessions beat long weekly ones
+   - The system will surface forgotten material automatically
+
+4. Use the Back button
+   - Revisit previous questions to reinforce connections
+   - Compare related concepts
+
+═══════════════════════════════════════════════════════════════════════════════
+
+CURRENT QUESTION CATEGORIES
+───────────────────────────
+
+English Questions:
+  - SIEM & Log Analysis
+  - Network Security
+  - Malware & Threats
+  - MITRE ATT&CK
+  - Incident Response
+  - Windows Security
+  - Threat Intelligence
+  - Phishing & Social Engineering
+  - Cryptography & Encryption
+  - Compliance & Frameworks
+  - Advanced Scenarios
+
+Hebrew Questions (שאלות בעברית):
+  - פרוטוקולי תקשורת (Communication Protocols)
+  - פרוטוקולי גישה מרחוק (Remote Access)
+  - אבטחת רשת (Network Security)
+  - Active Directory
+  - Windows
+  - מדיניות סיסמאות (Password Policy)
+  - פרוטוקולי אימות (Authentication)
+  - התקפות DDoS
+  - התקפות סייבר (Cyber Attacks)
+  - ניהול פגיעויות (Vulnerability Management)
+  - פישינג והנדסה חברתית (Phishing & Social Engineering)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+OFFLINE USAGE
+─────────────
+
+This app works completely offline. Once opened in a browser:
+- No internet connection required
+- All data stored locally
+- No external dependencies
+
+You can even copy the HTML file to a USB drive and use it on any computer.
+
+═══════════════════════════════════════════════════════════════════════════════
+
+TROUBLESHOOTING
+───────────────
+
+"Questions keep repeating":
+  → This is intentional! Questions you marked as "Didn't Know" or 
+    "Partially Knew" are scheduled to reappear soon.
+
+"Lost my progress":
+  → Progress is stored in browser localStorage. Clearing browser 
+    data or using a different browser will lose progress.
+
+"Syntax error when adding questions":
+  → Common issues: missing comma, missing quote, unclosed bracket.
+    Use a JSON validator to check your question format.
+
+═══════════════════════════════════════════════════════════════════════════════
+
